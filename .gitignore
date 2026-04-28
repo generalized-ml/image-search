@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+venv/
+dist/
+build/
+*.egg-info/
+
+# Data & indexes
+data/
+*.index
+*.faiss
+assets/sample_images/
+
+# Jupyter
+.ipynb_checkpoints
+
+# VSCode
+.vscode/
+
+# Docker
+*.log

@@ -1,175 +1,60 @@
-# Semantic Image Search
+# Image-Search (Learning Project)
 
-A powerful semantic image search application that allows you to search for images using natural language queries. The application uses CLIP (Contrastive Language-Image Pre-training) to generate embeddings and perform semantic similarity search.
+Objective
+- Build a small image-search system using Retrieval-Augmented Generation (RAG) ideas: given a text query, retrieve relevant images and optionally produce a short text justification/summary. This repo is structured for learning and rapid prototyping over 2 months.
 
-## Features
+Contents
+- `src/image_rag` — application code
+- `notebooks` — experiments and walkthroughs
+- `data` — raw and processed images and metadata
+- `scripts` — helpers to prepare data and build index
+- `examples` — simple demo clients
+- `docs` — architecture and API notes
 
-- 🔍 Semantic search: Search images using natural language descriptions
-- 🖼️ Support for multiple image formats (JPG, PNG, JPEG, BMP, GIF)
-- ⚡ Fast vector similarity search using FAISS
-- 🌐 REST API for integration
-- 💻 Web-based user interface
-- 📊 Batch image processing and indexing
+Quickstart (local)
+1. Create virtualenv:
+   python -m venv .venv && source .venv/bin/activate
+2. Install:
+   pip install -r requirements.txt
+3. Prepare sample data (put images in `data/raw/`), then:
+   python scripts/prepare_data.py --input data/raw --out data/processed
+4. Build index:
+   python scripts/build_index.py --data data/processed --index_path data/index/faiss.index
+5. Run API:
+   uvicorn image_rag.app:app --reload --host 0.0.0.0 --port 8000
+6. Query:
+   python examples/demo_query.py "a red sports car"
 
-## Project Structure
+What this repo includes (starter)
+- Minimal FastAPI server with a `/search` endpoint that accepts a text query and returns top-k image references.
+- Skeletons for embedder (CLIP), indexer (FAISS), retriever and ranker modules.
+- Notebooks for step-by-step learning.
 
-```
-image-search/
-├── backend/
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── routes.py
-│   │   └── schemas.py
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── embeddings.py
-│   │   └── search.py
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── image_processor.py
-│   │   └── indexer.py
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   └── helpers.py
-│   ├── __init__.py
-│   └── main.py
-├── frontend/
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   └── js/
-│   │       └── app.js
-│   ├── templates/
-│   │   └── index.html
-│   └── __init__.py
-├── data/
-│   ├── images/
-│   │   └── .gitkeep
-│   └── index/
-│       └── .gitkeep
-├── tests/
-│   ├── __init__.py
-│   ├── test_embeddings.py
-│   ├── test_search.py
-│   └── test_api.py
-├── notebooks/
-│   └── explore_embeddings.ipynb
-├── scripts/
-│   ├── index_images.py
-│   └── setup_demo.py
-├── .env.example
-├── .gitignore
-├── requirements.txt
-├── setup.py
-└── README.md
-```
+Tech stack suggestion
+- Python 3.10+
+- PyTorch + OpenAI/CLIP or Hugging Face Transformers for image/text embeddings
+- sentence-transformers for text embeddings (or CLIP text encoder)
+- faiss-cpu for vector index
+- FastAPI + Uvicorn for a lightweight API
+- Docker for reproducible runtime
 
-## Installation
+2-Month Learning Plan (weekly)
+- Week 1: Environment + basic Python + dataset collection. Get familiar with CLIP and simple embedding extraction.
+- Week 2: Implement embedder for images and text. Run small embeddings on sample images.
+- Week 3: Learn FAISS and build a toy index. Do nearest-neighbour queries.
+- Week 4: Implement retriever + run end-to-end search locally. Basic API endpoint.
+- Week 5: Add ranking/filtering (e.g., metadata, cosine similarity thresholds). Notebook for evaluation metrics.
+- Week 6: Integrate simple RAG-style generator (optional: small LLM or template summarizer) to produce explanations.
+- Week 7: Tests, packaging, Dockerize, CI basics.
+- Week 8: Polish, final demo, documentation, and prepare a short presentation.
 
-### Prerequisites
+Milestones & Deliverables
+- End of Week 4: working local API that returns relevant images for a query
+- End of Week 6: RAG-style responses with explanation text
+- End of Week 8: Docker image, tests, and documentation
 
-- Python 3.8+
-- pip
-- Virtual environment (recommended)
+How to contribute
+- See CONTRIBUTING.md for coding style, tests, and PR process.
 
-### Setup
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd image-search
-```
-
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Configure environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your settings
-```
-
-5. Index your images:
-```bash
-python scripts/index_images.py --image-dir data/images
-```
-
-## Usage
-
-### Starting the Server
-
-```bash
-python backend/main.py
-```
-
-The server will start at `http://localhost:8000`
-
-### API Endpoints
-
-- `GET /`: Web interface
-- `POST /api/search`: Search images by text query
-- `POST /api/index`: Index new images
-- `GET /api/health`: Health check
-
-### Example Search Request
-
-```bash
-curl -X POST "http://localhost:8000/api/search" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "a dog playing in the park", "top_k": 5}'
-```
-
-## Development
-
-### Running Tests
-
-```bash
-pytest tests/
-```
-
-### Code Style
-
-```bash
-black backend/ frontend/ tests/
-flake8 backend/ frontend/ tests/
-```
-
-## Technologies Used
-
-- **CLIP**: OpenAI's vision-language model for embeddings
-- **FAISS**: Facebook AI Similarity Search for fast vector search
-- **FastAPI**: Modern web framework for building APIs
-- **PyTorch**: Deep learning framework
-- **Pillow**: Image processing library
-
-## Configuration
-
-Edit `.env` file to configure:
-
-- `IMAGE_DIR`: Directory containing images to search
-- `INDEX_DIR`: Directory to store index files
-- `MODEL_NAME`: CLIP model to use (default: ViT-B/32)
-- `DEVICE`: CPU or CUDA
-- `TOP_K`: Default number of results to return
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-MIT License
-
-## Acknowledgments
-
-- OpenAI CLIP model
-- Facebook AI Similarity Search (FAISS)
+License
+- MIT
